@@ -1,5 +1,5 @@
 
-from .core import build_artifacts
+from .core import build_artifacts, store, store_value
 from .common import NETWORK_CONFIGS
 from base64 import b64decode
 from tonsdk.contract.wallet import Wallets
@@ -7,7 +7,6 @@ from tonsdk.contract import Contract
 from tonsdk.boc import Cell
 from ton.sync import TonlibClient
 from ton.tl.types import Tvm_StackEntryNumber, Tvm_NumberDecimal
-import requests
 import sys, os
 import time
 
@@ -19,25 +18,6 @@ deploy <path> - upload smartcontract to network
 config <url> - set config url (or testnet, mainnet)
 wallet - show deploy-wallet and balance""")
     sys.exit(1)
-
-
-def store(key, value: bytes):
-    if not os.path.isdir(f'{os.path.expanduser("~")}/.xton'):
-        os.mkdir(f'{os.path.expanduser("~")}/.xton')
-
-    with open(f'{os.path.expanduser("~")}/.xton/{key}', 'wb') as file:
-        file.write(value)
-
-
-def store_value(key, base=None):
-    if not os.path.isdir(f'{os.path.expanduser("~")}/.xton'):
-        return base
-
-    if key not in os.listdir(f'{os.path.expanduser("~")}/.xton'):
-        return base
-
-    with open(f'{os.path.expanduser("~")}/.xton/{key}', 'rb') as file:
-        return file.read()
 
 
 def load_deploy_wallet():
@@ -79,6 +59,9 @@ def main():
     if command == 'set':
         store(args[0], args[1].encode())
         print(f"Value {args[0]} set to {args[1]}")
+        return
+    if command == 'get':
+        print('Value:', store_value(args[0]).decode())
         return
     elif command == 'config':
         if not args:
