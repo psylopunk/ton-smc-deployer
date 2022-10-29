@@ -36,15 +36,3 @@
     return seqno;
 }
 
-(int) read_content(int n) method_id {
-    (int seqno, cell content) = load_data();
-    slice cs = content.begin_parse();
-    int counter = 0;
-    while (counter != n) {
-        cs~load_ref();
-        counter = counter + 1;
-    }
-    cs = cs~load_ref().begin_parse();
-    return cs~load_uint(32);
-}
-

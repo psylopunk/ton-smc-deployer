@@ -9,7 +9,7 @@ with open("requirements.txt", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="xton",
-    version="0.0.1",
+    version="0.0.2",
     author="Maxim Gurov",
     author_email="psylopunk@protonmail.com",
     description="TON SMC deployer Interface",

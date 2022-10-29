@@ -26,7 +26,6 @@ def build_artifacts(name, imports=None):
     with open(f".build/{name}.cell", 'wb') as file: file.write(b'')
 
     Popen(f'export FIFTPATH="{xton_path}/xton/fift-libs"', shell=True).wait()
-    print(f'export FIFTPATH="{xton_path}/xton/fift-libs"')
 
     print(f"Building {name}...")
     proc = Popen(f'func -APS -o .build/{name}.fif {" ".join([x for x in imports])}', shell=True)
@@ -45,7 +44,9 @@ def build_artifacts(name, imports=None):
         file.write(fift_source_cell)
 
     print(f"Compiling {name}...")
-    proc = Popen(f'fift .build/{name}.cell.fif', shell=True, stdout=PIPE, stderr=PIPE)
+    fift_env = os.environ.copy()
+    fift_env['FIFTPATH'] = f"{xton_path}/xton/fift-libs"
+    proc = Popen(f'fift .build/{name}.cell.fif', shell=True, stdout=PIPE, stderr=PIPE, env=fift_env)
     proc.wait()
     out, err = proc.communicate()
     if err:

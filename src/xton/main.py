@@ -6,6 +6,7 @@ from tonsdk.contract.wallet import Wallets
 from tonsdk.contract import Contract
 from tonsdk.boc import Cell
 from ton.sync import TonlibClient
+from ton.tl.types import Tvm_StackEntryNumber, Tvm_NumberDecimal
 import requests
 import sys, os
 import time
@@ -87,6 +88,13 @@ def main():
         store('config_url', new_url.encode())
         print(f"Config url set to {new_url}")
         return
+    elif command == 'build':
+        if not args:
+            invalid_usage()
+
+        result = build_artifacts(args[-1], args)
+        print('Code Cell: ' + result['hex'])
+        return
 
     ls_index = store_value('ls_index', b'2').decode()
     store('ls_index', ls_index.encode())
@@ -109,12 +117,6 @@ def main():
         time.sleep(5)
         return main()
 
-    if command == 'build':
-        if not args:
-            invalid_usage()
-
-        result = build_artifacts(args[-1], args)
-        print('Code Cell: ' + result['hex'])
     elif command == 'deploy':
         if len(args) < 2:
             invalid_usage()
@@ -133,16 +135,20 @@ def main():
             print(f"Contract already deployed! | {contract_address}")
             return
 
+        while bool(contract_state.code) is False:
+            query = wallet.create_transfer_message(
+                contract_address, client.to_nano(0.05), wallet_account.seqno(),
+                state_init=contract.create_state_init()['state_init']
+            )
+            client.send_boc(query['message'].to_boc(False, False))
+            print(f"Sent deploy message! | {contract_address}")
+            contract_state = contract_account.get_state(force=True)
+            time.sleep(5)
 
-        query = wallet.create_transfer_message(
-            contract_address, client.to_nano(0.05), wallet_account.seqno(),
-            state_init=contract.create_state_init()['state_init']
-        )
-        client.send_boc(query['message'].to_boc(False))
         print(f"Contract deployed! | {contract_address}")
+        return
     elif command == 'state':
-        result = build_artifacts(args[-1], args)
-        contract = build_contract(result['code'], data=store_value('last_data').decode())
+        contract = build_contract(store_value('last_code').decode(), data=store_value('last_data').decode())
         contract_address = contract.address.to_string(1, 1, 1)
         print(f"Contract address: {contract_address}")
         contract_account = client.find_account(contract_address)
@@ -164,7 +170,14 @@ Balance: {contract_account.get_balance()}""")
         contract_state = contract_account.get_state()
         assert bool(contract_state.code), "Contract is not deployed"
 
-        return contract_account.run_get_method(args[0])
+        method = args[0]
+        args = args[1:]
+        call_args = []
+        for e in args:
+            if isinstance(e, int):
+                call_args.append(Tvm_StackEntryNumber(Tvm_NumberDecimal(e)))
+
+        return contract_account.run_get_method(method, call_args)
     elif command == 'wallet':
         print(f"""Your deploy wallet is {wallet_address}. His balance is {round(client.from_nano(wallet_account.get_balance()), 2)} TON""")
 
