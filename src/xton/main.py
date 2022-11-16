@@ -1,12 +1,17 @@
 
 from .core import build_artifacts, store, store_value
 from .common import NETWORK_CONFIGS
+
 from base64 import b64decode
+from subprocess import Popen, PIPE
+
 from tonsdk.contract.wallet import Wallets
 from tonsdk.contract import Contract
 from tonsdk.boc import Cell
+
 from ton.sync import TonlibClient
 from ton.tl.types import Tvm_StackEntryNumber, Tvm_NumberDecimal
+
 import sys, os
 import time
 
@@ -77,6 +82,13 @@ def main():
 
         result = build_artifacts(args[-1], args)
         print('Code Cell: ' + result['hex'])
+        return
+    elif command == 'run':
+        if not args:
+            invalid_usage()
+
+        result = build_artifacts(args[-1], args)
+        Popen(f"node --no-experimental-fetch {result['xton_path']}/xton/test-smc.js {result['hex']}", shell=True).wait()
         return
 
     ls_index = store_value('ls_index', b'2').decode()

@@ -90,5 +90,6 @@ def build_artifacts(name, imports=None):
 
     return {
         'code': code_cell,
-        'hex': code_cell.hex().upper()
+        'hex': code_cell.hex().upper(),
+        'xton_path': xton_path
     }

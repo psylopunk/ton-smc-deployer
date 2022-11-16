@@ -9,7 +9,7 @@ with open("requirements.txt", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="xton",
-    version="0.0.3",
+    version="0.0.4",
     author="Maxim Gurov",
     author_email="psylopunk@protonmail.com",
     description="TON SMC deployer Interface",
@@ -27,7 +27,8 @@ setuptools.setup(
         "": "src",
     },
     package_data={
-        'xton': ['*.func', '.fif']
+        'xton': ['*.func', '.fif', '.js'],
+        'xton/fift-libs': ['.fif'],
     },
     install_requires=install_requires,
     packages=['xton'],
