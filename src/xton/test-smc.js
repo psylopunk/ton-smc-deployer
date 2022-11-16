@@ -31,7 +31,9 @@ async function main() {
   for (i in logs) {
     logs[i] = logs[i].split('\n');
     for (y in logs[i]) {
-      console.log((logs[i][y].indexOf('#DEBUG#') !== -1 ? '\x1b[34m' : '\x1b[37m') + logs[i][y]);
+      console.log(
+          (logs[i][y].indexOf('#DEBUG#') !== -1 ? '\x1b[47m\x1b[30m' : '') + logs[i][y] + '\x1b[40m\x1b[37m'
+      );
     }
   }
   return 0;
